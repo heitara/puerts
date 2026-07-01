@@ -14,9 +14,9 @@
 // sets via CPF_* below) -- so dropping RF_Transient for 5.8+ matches Epic's own migration
 // guidance, not just a warning suppression. Pre-5.8 engines keep the existing behavior.
 #if ENGINE_MAJOR_VERSION > 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 8)
-#define PUERTS_NEW_FIELD(Type, Owner, Name) new Type(Owner, Name)
+#define PUERTS_NEW_PROPERTY(Type, Owner, Name) new Type(Owner, Name)
 #else
-#define PUERTS_NEW_FIELD(Type, Owner, Name) new Type(Owner, Name, RF_Transient)
+#define PUERTS_NEW_PROPERTY(Type, Owner, Name) new Type(Owner, Name, RF_Transient)
 #endif
 
 namespace PUERTS_NAMESPACE
@@ -108,39 +108,39 @@ PropertyMacro* FContainerMeta::GetBuiltinProperty(BuiltinType type)
                 break;
 #elif ENGINE_MINOR_VERSION > 0 && ENGINE_MAJOR_VERSION > 4
             case TBool:
-                Ret = PUERTS_NEW_FIELD(FBoolProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FBoolProperty, PropertyMetaRoot, NAME_None);
                 static_cast<FBoolProperty*>(Ret)->SetBoolSize(1, true, 0xFF);
                 break;
             case TByte:
-                Ret = PUERTS_NEW_FIELD(FByteProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FByteProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TInt:
-                Ret = PUERTS_NEW_FIELD(FIntProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FIntProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TFloat:
-                Ret = PUERTS_NEW_FIELD(FFloatProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FFloatProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TDouble:
-                Ret = PUERTS_NEW_FIELD(FDoubleProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FDoubleProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TInt64:
-                Ret = PUERTS_NEW_FIELD(FInt64Property, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FInt64Property, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TString:
-                Ret = PUERTS_NEW_FIELD(FStrProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FStrProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TText:
-                Ret = PUERTS_NEW_FIELD(FTextProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FTextProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
             case TName:
-                Ret = PUERTS_NEW_FIELD(FNameProperty, PropertyMetaRoot, NAME_None);
+                Ret = PUERTS_NEW_PROPERTY(FNameProperty, PropertyMetaRoot, NAME_None);
                 Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
                 break;
 #else
@@ -205,7 +205,7 @@ PropertyMacro* FContainerMeta::GetObjectProperty(UField* Field)
         Ret = new (EC_InternalUseOnlyConstructor, PropertyMetaRoot, NAME_None, RF_Transient)
             UObjectProperty(FObjectInitializer(), EC_CppProperty, 0, CPF_HasGetValueTypeHash, Class);
 #elif ENGINE_MINOR_VERSION > 0 && ENGINE_MAJOR_VERSION > 4
-        Ret = PUERTS_NEW_FIELD(FObjectProperty, PropertyMetaRoot, NAME_None);
+        Ret = PUERTS_NEW_PROPERTY(FObjectProperty, PropertyMetaRoot, NAME_None);
         static_cast<FObjectProperty*>(Ret)->PropertyClass = Class;
         Ret->PropertyFlags |= CPF_HasGetValueTypeHash;
 #else
@@ -218,7 +218,7 @@ PropertyMacro* FContainerMeta::GetObjectProperty(UField* Field)
         Ret = new (EC_InternalUseOnlyConstructor, PropertyMetaRoot, NAME_None, RF_Transient)
             UStructProperty(FObjectInitializer(), EC_CppProperty, 0, CPF_HasGetValueTypeHash, ScriptStruct);
 #elif ENGINE_MINOR_VERSION > 0 && ENGINE_MAJOR_VERSION > 4
-        Ret = PUERTS_NEW_FIELD(FStructProperty, PropertyMetaRoot, NAME_None);
+        Ret = PUERTS_NEW_PROPERTY(FStructProperty, PropertyMetaRoot, NAME_None);
         static_cast<FStructProperty*>(Ret)->Struct = ScriptStruct;
 #if ENGINE_MINOR_VERSION >= 5 && ENGINE_MAJOR_VERSION >= 5
         Ret->SetElementSize(ScriptStruct->PropertiesSize);
@@ -243,12 +243,12 @@ PropertyMacro* FContainerMeta::GetObjectProperty(UField* Field)
         {
             FEnumProperty* EnumProp =
 #if ENGINE_MAJOR_VERSION > 4 && ENGINE_MINOR_VERSION > 4    // 5.5+
-                PUERTS_NEW_FIELD(FEnumProperty, PropertyMetaRoot, NAME_None);
+                PUERTS_NEW_PROPERTY(FEnumProperty, PropertyMetaRoot, NAME_None);
             EnumProp->SetEnum(Enum);
 #else
                 new FEnumProperty(PropertyMetaRoot, NAME_None, RF_Transient, 0, CPF_HasGetValueTypeHash, Enum);
 #endif
-            FNumericProperty* UnderlyingProp = PUERTS_NEW_FIELD(FByteProperty, EnumProp, TEXT("UnderlyingType"));
+            FNumericProperty* UnderlyingProp = PUERTS_NEW_PROPERTY(FByteProperty, EnumProp, TEXT("UnderlyingType"));
             EnumProp->AddCppProperty(UnderlyingProp);
 #if ENGINE_MINOR_VERSION >= 5 && ENGINE_MAJOR_VERSION >= 5
             EnumProp->SetElementSize(UnderlyingProp->GetElementSize());
@@ -261,7 +261,7 @@ PropertyMacro* FContainerMeta::GetObjectProperty(UField* Field)
         }
         else
         {
-            FByteProperty* ByteProp = PUERTS_NEW_FIELD(FByteProperty, PropertyMetaRoot, NAME_None);
+            FByteProperty* ByteProp = PUERTS_NEW_PROPERTY(FByteProperty, PropertyMetaRoot, NAME_None);
             ByteProp->Enum = Enum;
 
             Ret = ByteProp;
@@ -283,7 +283,7 @@ PropertyMacro* FContainerMeta::GetObjectProperty(UField* Field)
     return Ret;
 }
 
-#undef PUERTS_NEW_FIELD
+#undef PUERTS_NEW_PROPERTY
 
 void FContainerMeta::NotifyElementTypeDeleted(const UField* Field)
 {
